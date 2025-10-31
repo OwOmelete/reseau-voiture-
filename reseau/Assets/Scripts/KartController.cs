@@ -24,6 +24,7 @@ public class KartController : NetworkBehaviour
     private bool hasJumped;
     private bool jumpPressed;
     private float currentSpinSpeed;
+    private Vector3 camVelocity;
 
     enum driftDir
     {
@@ -61,11 +62,14 @@ public class KartController : NetworkBehaviour
     [SerializeField] private float wheelsRotationAmount;
     public float carOffset;
     public float wheelRotationMult = 1;
+    [SerializeField] private float camLerpPos;
+    [SerializeField] private float camLerpRot;
 
     [Header("references")]
     
     public Transform kartNormal;
     public Transform kartModel;
+    public Transform camPivot;
     [SerializeField] private GameObject frontLeftWheel;
     [SerializeField] private GameObject frontLeftWheelPivot;
     [SerializeField] private GameObject frontRightWheel;
@@ -81,13 +85,27 @@ public class KartController : NetworkBehaviour
             return;
         }
 
-        CameraManager.INSTANCE.gameObject.transform.SetParent(kartModel);
+        CameraManager.INSTANCE.gameObject.transform.SetParent(camPivot);
         steering = groundSteering;
+    }
+
+    private void LateUpdate()
+    {
+        camPivot.transform.position = Vector3.SmoothDamp(
+            camPivot.transform.position,
+            kartModel.transform.position,
+            ref camVelocity,
+            camLerpPos);
+        camPivot.transform.rotation = Quaternion.Lerp(
+            camPivot.transform.rotation, 
+            Quaternion.Euler(0, kartModel.eulerAngles.y, 0),
+            camLerpRot);
+        
+        
     }
 
     void Update()
     {
-
         if (!IsOwner)
         {
             return;
@@ -153,6 +171,8 @@ public class KartController : NetworkBehaviour
             {
                 Boost();
             }
+
+            currentDriftDir = driftDir.none;
             isDrifting = false;
         }
         
@@ -197,9 +217,9 @@ public class KartController : NetworkBehaviour
                 isJumping = false;
                 hasJumped = false;
             }
-            
             if (canDrift && !isDrifting && startDrift)
             {
+                
                 startDrift = false;
                 canDrift = false;
                 isDrifting = true;
@@ -224,6 +244,7 @@ public class KartController : NetworkBehaviour
             }
             steering = groundSteering;
 
+            Debug.Log(currentDriftDir);
             if (isDrifting && currentDriftDir != driftDir.none)
             {
                 if (currentDriftDir == driftDir.left)

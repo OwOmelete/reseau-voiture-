@@ -240,11 +240,11 @@ public class KartController : NetworkBehaviour
                         currentDriftDir = driftDir.none;
                     }
                 }
-                Debug.Log(currentDriftDir);
+                //Debug.Log(currentDriftDir);
             }
             steering = groundSteering;
 
-            Debug.Log(currentDriftDir);
+            //Debug.Log(currentDriftDir);
             if (isDrifting && currentDriftDir != driftDir.none)
             {
                 if (currentDriftDir == driftDir.left)
@@ -318,7 +318,7 @@ public class KartController : NetworkBehaviour
             new Vector3(0, transform.eulerAngles.y + currentRotate, 0), Time.deltaTime * 5f);
         
         
-        kartNormal.up = Vector3.Lerp(kartNormal.up, hitNear.normal, Time.deltaTime * 8.0f);
+        kartNormal.up = Vector3.Lerp(kartNormal.up, hitOn.normal, Time.deltaTime * 8.0f);
         
         kartNormal.Rotate(0, transform.eulerAngles.y, 0);
 

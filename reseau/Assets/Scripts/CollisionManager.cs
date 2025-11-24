@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class CollisionManager : MonoBehaviour
 {
-    [SerializeField] private KartController kartController;
+    public KartController kartController;
+    public PlayerProgress player;
     private void OnCollisionEnter(Collision other)
     {
         if (other.transform.CompareTag("Player"))

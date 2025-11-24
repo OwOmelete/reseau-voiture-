@@ -30,6 +30,7 @@ public class KartController : NetworkBehaviour
     public Role role;
     private float driftAmount;
 
+
     public enum Role
     {
         hider,
@@ -100,7 +101,8 @@ public class KartController : NetworkBehaviour
     [SerializeField] private GameObject frontRightWheelPivot;
     [SerializeField] private GameObject backLeftWheel;
     [SerializeField] private GameObject backRightWheel;
-    [SerializeField] private TMP_Text speedCounter;
+    [SerializeField] private TMP_Text positionText;
+    [SerializeField] private PlayerProgress playerProgress;
 
     private void Start()
     {
@@ -153,6 +155,8 @@ public class KartController : NetworkBehaviour
         {
             return;
         }
+
+        positionText.text = playerProgress.Rank.Value.ToString();
         
         transform.position = sphere.transform.position - new Vector3(0,carOffset,0);
         
@@ -244,7 +248,6 @@ public class KartController : NetworkBehaviour
         currentRotate = Mathf.Lerp(currentRotate, rotate, Time.deltaTime * 4f);
         rotate = 0f;
         
-        
     }
 
     private void FixedUpdate()
@@ -292,7 +295,7 @@ public class KartController : NetworkBehaviour
                 isJumping = false;
                 hasJumped = false;
             }
-            if (canDrift && !isDrifting && startDrift && MathF.Abs(dir) > 0.1f)
+            if (canDrift && !isDrifting && startDrift &&  (MathF.Abs(dir) > 0.1f || currentDriftDir != driftDir.none))
             {
                 
                 startDrift = false;
@@ -316,6 +319,10 @@ public class KartController : NetworkBehaviour
                     }
                 }
                 //Debug.Log(currentDriftDir);
+            }
+            else
+            {
+                startDrift = false;
             }
             steering = groundSteering;
 

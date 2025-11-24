@@ -2,17 +2,18 @@ using System;
 using TMPro;
 using UnityEngine;
 using Unity.Netcode;
+using DG.Tweening;
+using DG.Tweening.Core;
 
 public class KartController : NetworkBehaviour
 {
-    [SerializeField] private Rigidbody sphere;
+    [SerializeField] public Rigidbody sphere;
 
     private bool OnGround;
     float speed, currentSpeed;
     float rotate, currentRotate;
     int driftDirection;
     float driftPower;
-    int driftMode = 0;
     private float steering;
     private float airSpin;
     private bool canDrift;
@@ -24,7 +25,16 @@ public class KartController : NetworkBehaviour
     private bool hasJumped;
     private bool jumpPressed;
     private float currentSpinSpeed;
+    private float boostDuration;
     private Vector3 camVelocity;
+    public Role role;
+    private float driftAmount;
+
+    public enum Role
+    {
+        hider,
+        seeker
+    }
 
     enum driftDir
     {
@@ -55,7 +65,12 @@ public class KartController : NetworkBehaviour
     [SerializeField] private float driftBaseSteering;
     [SerializeField] private float driftMaxSteering;
     [SerializeField] private float driftMinSteering;
-    
+    [SerializeField] private float driftLevelUp = 0.5f;
+    [SerializeField] private float driftLevelUp2 = 1.2f;
+    [SerializeField] private float driftLevel1Duration = 0.4f;
+    [SerializeField] private float driftLevel2Duration = 0.8f;
+    [SerializeField] private float boostMult = 1.2f;
+    [SerializeField] private float boostVisualsDuration = 1;
     
     [Header("visuals")]
     
@@ -64,6 +79,15 @@ public class KartController : NetworkBehaviour
     public float wheelRotationMult = 1;
     [SerializeField] private float camLerpPos;
     [SerializeField] private float camLerpRot;
+    [SerializeField] private GameObject driftEffect;
+    [SerializeField] private MeshRenderer leftDrift;
+    [SerializeField] private MeshRenderer rightDrift;
+    [SerializeField] private Material blueDrift;
+    [SerializeField] private Material orangeDrift;
+    [SerializeField] private Material purpleDrift;
+    [SerializeField] private GameObject fire;
+    [SerializeField] private GameObject[] fireList;
+    private Tween tween;
 
     [Header("references")]
     
@@ -84,11 +108,32 @@ public class KartController : NetworkBehaviour
         {
             return;
         }
-
         CameraManager.INSTANCE.gameObject.transform.SetParent(camPivot);
         steering = groundSteering;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            AssignRole();
+        }
+
+        if (IsClient)
+        {
+            Debug.Log("Mon rôle : " + role);
+        }
+    }
+
+    private void AssignRole()
+    {
+        if (NetworkManager.Singleton.ConnectedClients.Count == 1)
+        {
+            role = Role.seeker;
+        }
+        else role = Role.hider;
+    }
+    
     private void LateUpdate()
     {
         camPivot.transform.position = Vector3.SmoothDamp(
@@ -100,8 +145,6 @@ public class KartController : NetworkBehaviour
             camPivot.transform.rotation, 
             Quaternion.Euler(0, kartModel.eulerAngles.y, 0),
             camLerpRot);
-        
-        
     }
 
     void Update()
@@ -122,7 +165,6 @@ public class KartController : NetworkBehaviour
             else
             {
                 speed = maxSpeed;
-                
             }
         }
 
@@ -169,14 +211,33 @@ public class KartController : NetworkBehaviour
             canDrift = false;
             if (isDrifting)
             {
-                Boost();
+                driftEffect.SetActive(false);
+                if (driftAmount >= driftLevelUp2)
+                {
+                    tween.Kill();
+                    boostDuration = driftLevel2Duration + boostVisualsDuration;
+                    Boost();
+                }
+                else if (driftAmount >= driftLevelUp)
+                {
+                    tween.Kill();
+                    boostDuration = driftLevel1Duration + boostVisualsDuration;
+                    Boost();
+                }
             }
 
             currentDriftDir = driftDir.none;
             isDrifting = false;
+            updateDriftVisu(0);
+            driftAmount = 0;
         }
         
         Steering();
+
+        if (boostDuration - boostVisualsDuration > 0)
+        {
+            speed *= boostMult;
+        }
         
         currentSpeed = Mathf.SmoothStep(currentSpeed, speed, Time.deltaTime * acceleration);
         speed = 0f;
@@ -188,7 +249,6 @@ public class KartController : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        
         if (!IsOwner)
         {
             return;
@@ -201,6 +261,20 @@ public class KartController : NetworkBehaviour
 
         //Normal Rotation
         OnGround = Physics.Raycast(transform.position + (transform.up * .1f), -kartModel.transform.up, out hitNear, raycastDistance);
+
+        if (boostDuration > 0)
+        {
+            boostDuration -= Time.deltaTime;
+            if(boostDuration < 0) fire.SetActive(false);
+        }
+
+        if (boostDuration > 0 && boostDuration < boostVisualsDuration && !tween.IsActive())
+        {
+            foreach (GameObject fires in fireList)
+            {
+                tween = fires.transform.DOScale(new Vector3(MathF.Sign(fires.transform.localScale.x)*0.01f,0.01f,0.01f), 1).SetEase(Ease.InOutSine).OnComplete(DisableFire);
+            }
+        }
         
         if (!OnGround && Mathf.Abs(airSpin) > 0.1f && hasJumped)
         {
@@ -212,21 +286,22 @@ public class KartController : NetworkBehaviour
         
         if (OnGround)
         {
+            float dir = Input.GetAxis("Horizontal");
             if (isJumping)
             {
                 isJumping = false;
                 hasJumped = false;
             }
-            if (canDrift && !isDrifting && startDrift)
+            if (canDrift && !isDrifting && startDrift && MathF.Abs(dir) > 0.1f)
             {
                 
                 startDrift = false;
                 canDrift = false;
                 isDrifting = true;
+                driftEffect.SetActive(true);
 
                 if (currentDriftDir == driftDir.none)
                 {
-                    float dir = Input.GetAxis("Horizontal");
                     if (dir < -0.1f)
                     {
                         currentDriftDir = driftDir.left;
@@ -275,7 +350,19 @@ public class KartController : NetworkBehaviour
             steering = airSteering;
         }
         
-        
+        if (isDrifting)
+        {
+            driftAmount += 0.01f;
+            if (driftAmount >= driftLevelUp2)
+            {
+                updateDriftVisu(2);
+
+            }
+            else if (driftAmount >= driftLevelUp)
+            {
+                updateDriftVisu(1);
+            }
+        }
         
         wheelRotation(frontLeftWheel, true, frontLeftWheelPivot);
         wheelRotation(frontRightWheel, true, frontRightWheelPivot);
@@ -336,6 +423,11 @@ public class KartController : NetworkBehaviour
         //wheel.transform.localRotation = Quaternion.Euler(wheel.transform.localRotation.x + sphere.linearVelocity.magnitude * wheelRotationMult,wheel.transform.localRotation.y, wheel.transform.localRotation.z );
     }
 
+    void DisableFire()
+    {
+        fire.SetActive(false);
+    }
+    
     void Steering()
     {
         int dir = Input.GetAxis("Horizontal") > 0 ? 1 : -1;
@@ -375,8 +467,32 @@ public class KartController : NetworkBehaviour
 
     void Boost()
     {
+        fire.SetActive(true);
+        foreach (var fires in fireList)
+        {
+            fires.transform.localScale = new Vector3(MathF.Sign(fires.transform.localScale.x),
+                MathF.Sign(fires.transform.localScale.y), MathF.Sign(fires.transform.localScale.z));
+        }
         sphere.AddForce(kartModel.transform.forward * boostImpulse, ForceMode.Impulse);
     }
 
+    void updateDriftVisu(int amount)
+    {
+        if (amount == 0)
+        {
+            rightDrift.material = blueDrift;
+            leftDrift.material = blueDrift;
+        }
+        else if (amount == 1)
+        {
+            rightDrift.material = orangeDrift;
+            leftDrift.material = orangeDrift;
+        }
+        else if(amount == 2)
+        {
+            rightDrift.material = purpleDrift;
+            leftDrift.material = purpleDrift;
+        }
+    }
 
 }

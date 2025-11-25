@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ public class PlayerProgress : NetworkBehaviour
     public int lapCount;
     public int checkpointIndex;
     public float distanceToNext = 0f;
+    [SerializeField] private TMP_Text lapText;
 
     public NetworkVariable<int> Rank = new NetworkVariable<int>(
         default,
@@ -26,12 +28,18 @@ public class PlayerProgress : NetworkBehaviour
             RacePositionManager.Instance.UnregisterPlayer(this);
     }
 
+
+    public void UpdateLapText()
+    {
+        lapText.text = lapCount + "/" + LapManager.INSTANCE.totalLaps;
+    }
     
     
     private void Start()
     {
         lapCount = 1;
         checkpointIndex = 0;
+        UpdateLapText();
     }
 
     private void Update()

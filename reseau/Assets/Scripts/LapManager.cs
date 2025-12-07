@@ -36,6 +36,10 @@ public class LapManager : MonoBehaviour
                 {
                     Debug.Log("gagné");
                 }
+                else
+                {
+                    player.UpdateLapText();
+                }
             }
         }
     }

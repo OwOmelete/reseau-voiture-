@@ -849,6 +849,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KartController
   ShowTopMostFoldoutHeaderGroup: 1
   sphere: {fileID: 4368089180843850793}
+  isAttacking: 0
+  isSlowed: 0
   role: 0
   maxSpeed: 45
   boostSpeed: 60
@@ -1191,6 +1193,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   kartController: {fileID: 2434867813067687744}
   player: {fileID: 8316268491757857649}
+  playerInteraction: {fileID: 4518265783921559145}
 --- !u!1 &6934487681366593925
 GameObject:
   m_ObjectHideFlags: 0
@@ -1478,6 +1481,7 @@ GameObject:
   - component: {fileID: 3650782831318474171}
   - component: {fileID: -6981921075107055300}
   - component: {fileID: 2554591354938683619}
+  - component: {fileID: 4518265783921559145}
   m_Layer: 0
   m_Name: KartPlayer
   m_TagString: Player
@@ -1575,6 +1579,21 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &4518265783921559145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446857744960579859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 814833ac64624a0d89487186e413f48b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
+  ShowTopMostFoldoutHeaderGroup: 1
+  slowDuration: 1
+  kartController: {fileID: 2434867813067687744}
 --- !u!1 &8606988562240479503
 GameObject:
   m_ObjectHideFlags: 0

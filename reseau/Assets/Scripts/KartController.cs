@@ -27,6 +27,8 @@ public class KartController : NetworkBehaviour
     private float currentSpinSpeed;
     private float boostDuration;
     private Vector3 camVelocity;
+    public bool isAttacking;
+    public bool isSlowed = false;
     public Role role;
     private float driftAmount;
 
@@ -135,6 +137,16 @@ public class KartController : NetworkBehaviour
         }
         else role = Role.hider;
     }
+
+    public void slow()
+    {
+        if (!IsOwner)
+        {
+            return;
+        }
+        Debug.Log("slowed");
+        isSlowed = true;
+    }
     
     private void LateUpdate()
     {
@@ -170,6 +182,17 @@ public class KartController : NetworkBehaviour
             {
                 speed = maxSpeed;
             }
+            if (isSlowed)
+            {
+                Debug.Log("slowing");
+                speed = 0;
+            } 
+        }
+
+        if (Input.GetKey(KeyCode.Q) || Input.GetButton("Fire2"))
+        {
+            isAttacking = true;
+            Debug.Log("attack");
         }
 
         if (Input.GetKeyDown(KeyCode.LeftShift))

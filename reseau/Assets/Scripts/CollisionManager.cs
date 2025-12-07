@@ -6,12 +6,21 @@ public class CollisionManager : MonoBehaviour
 {
     public KartController kartController;
     public PlayerProgress player;
+    public PlayerInteraction playerInteraction;
     private void OnCollisionEnter(Collision other)
     {
         if (other.transform.CompareTag("Player"))
         {
+
             Debug.Log("yeehaw");
-            if (kartController.role == KartController.Role.hider) Respawn();
+            if (kartController.isAttacking)
+            {
+                if (other.transform.parent.TryGetComponent<PlayerInteraction>(out var otherPlayer))
+                {
+                    playerInteraction.OnPlayerCollision(otherPlayer);
+                }
+            }
+            //if (kartController.role == KartController.Role.hider) Respawn();
         }
     }
 

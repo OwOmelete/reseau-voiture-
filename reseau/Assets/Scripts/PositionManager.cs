@@ -27,14 +27,12 @@ public class RacePositionManager : NetworkBehaviour
     {
         if (!IsServer || players.Count == 0)
             return;
-        // Tri direct sur la liste
         var sorted = players
             .OrderByDescending(p => p.GetProgress())
             .ToList();
 
         for (int i = 0; i < sorted.Count; i++)
         {
-            Debug.Log("Assign rank " + (i+1) + " to " + sorted[i].OwnerClientId);
             sorted[i].Rank.Value = i + 1;
         }
     }

@@ -50,9 +50,9 @@ public class PlayerInteraction : NetworkBehaviour
     [ClientRpc]
     private void ApplySlowClientRpc(ClientRpcParams rpcParams = default)
     {
+        KartController.player.slow();
         Debug.Log("je vais manger ton père victor baz");
-        kartController.slow();
-        slowTimer = slowDuration;
-        Debug.Log($"Player {OwnerClientId} est ralenti !");
+        //kartController.slow();
+        //slowTimer = slowDuration;
     }
 }

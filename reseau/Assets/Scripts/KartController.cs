@@ -106,12 +106,18 @@ public class KartController : NetworkBehaviour
     [SerializeField] private TMP_Text positionText;
     [SerializeField] private PlayerProgress playerProgress;
 
+
+    public static KartController player;
+    
     private void Start()
     {
         if (!IsOwner)
         {
             return;
         }
+
+        player = this;
+        
         CameraManager.INSTANCE.gameObject.transform.SetParent(camPivot);
         steering = groundSteering;
     }

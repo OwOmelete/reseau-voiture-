@@ -858,6 +858,10 @@ MonoBehaviour:
   acceleration: 12
   groundSteering: 15
   airSteering: 25
+  slowDuration: 2
+  slowMult: 0.5
+  attackDelay: 1
+  attackDuration: 0.2
   gravity: 25
   jumpForce: 2000
   spinSpeed: 50
@@ -896,6 +900,7 @@ MonoBehaviour:
   kartNormal: {fileID: 2955118463758300786}
   kartModel: {fileID: 7310789048448640079}
   camPivot: {fileID: 5467046663447040074}
+  attackCollider: {fileID: 8138639904582425245}
   frontLeftWheel: {fileID: 5021138112023243458}
   frontLeftWheelPivot: {fileID: 4246520192562027316}
   frontRightWheel: {fileID: 3965488121119033139}
@@ -1047,6 +1052,7 @@ GameObject:
   - component: {fileID: 3894384938921685970}
   - component: {fileID: 6095183803395391387}
   - component: {fileID: 4377565302791884521}
+  - component: {fileID: 8138639904582425245}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Player
@@ -1195,6 +1201,27 @@ MonoBehaviour:
   kartController: {fileID: 2434867813067687744}
   player: {fileID: 8316268491757857649}
   playerInteraction: {fileID: 4518265783921559145}
+--- !u!135 &8138639904582425245
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6824044729845349620}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Radius: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6934487681366593925
 GameObject:
   m_ObjectHideFlags: 0
@@ -1522,7 +1549,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3820014133
+  GlobalObjectIdHash: 3005130676
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1

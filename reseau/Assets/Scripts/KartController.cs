@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using Unity.Netcode;
@@ -29,6 +30,8 @@ public class KartController : NetworkBehaviour
     private Vector3 camVelocity;
     public bool isAttacking;
     public bool isSlowed = false;
+    private float slowTimer;
+    private float attackTimer;
     public Role role;
     private float driftAmount;
 
@@ -56,6 +59,12 @@ public class KartController : NetworkBehaviour
     
     public float groundSteering = 80f;
     public float airSteering = 80f;
+
+    public float slowDuration;
+    public float slowMult;
+
+    public float attackDelay;
+    public float attackDuration;
     
     public float gravity = 10f;
     [SerializeField] private float jumpForce = 1;
@@ -97,6 +106,7 @@ public class KartController : NetworkBehaviour
     public Transform kartNormal;
     public Transform kartModel;
     public Transform camPivot;
+    [SerializeField] private SphereCollider attackCollider;
     [SerializeField] private GameObject frontLeftWheel;
     [SerializeField] private GameObject frontLeftWheelPivot;
     [SerializeField] private GameObject frontRightWheel;
@@ -150,7 +160,10 @@ public class KartController : NetworkBehaviour
         {
             return;
         }
-        Debug.Log("slowed");
+        
+        Debug.Log("victor baz embrasse moi ^^ :3 ");
+
+        slowTimer = slowDuration;
         isSlowed = true;
     }
     
@@ -167,13 +180,35 @@ public class KartController : NetworkBehaviour
             camLerpRot);
     }
 
+
+    private IEnumerator Attack()
+    {
+        isAttacking = true;
+        attackCollider.enabled = true;
+        yield return new WaitForSeconds(attackDuration);
+        isAttacking = false;
+        attackCollider.enabled = false;
+    }
     void Update()
     {
         if (!IsOwner)
         {
             return;
         }
+        
+        if (isSlowed)
+        {
+            slowTimer -= Time.deltaTime;
 
+            if (slowTimer <= 0f)
+                isSlowed = false;
+        }
+
+        if (attackTimer > 0)
+        {
+            attackTimer -= Time.deltaTime;
+        }
+        
         positionText.text = playerProgress.Rank.Value.ToString();
         
         transform.position = sphere.transform.position - new Vector3(0,carOffset,0);
@@ -190,14 +225,14 @@ public class KartController : NetworkBehaviour
             }
             if (isSlowed)
             {
-                Debug.Log("slowing");
-                speed = 0;
+                speed *= slowMult;
             } 
         }
 
-        if (Input.GetKey(KeyCode.Q) || Input.GetButton("Fire2"))
+        if ((Input.GetKeyDown(KeyCode.Q) || Input.GetButtonDown("Fire3")) && attackTimer <= 0)
         {
-            isAttacking = true;
+            StartCoroutine(Attack());
+            attackTimer = attackDelay;
             Debug.Log("attack");
         }
 

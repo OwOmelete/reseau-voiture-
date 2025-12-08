@@ -31,14 +31,11 @@ public class LapManager : MonoBehaviour
                 player.checkpointIndex = 0;
                 player.lapCount++;
                 Debug.Log("tour numéro " + player.lapCount);
+                player.UpdateLapText();
 
                 if (player.lapCount > totalLaps)
                 {
                     Debug.Log("gagné");
-                }
-                else
-                {
-                    player.UpdateLapText();
                 }
             }
         }

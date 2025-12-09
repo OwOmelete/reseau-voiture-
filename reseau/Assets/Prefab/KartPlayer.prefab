@@ -988,6 +988,7 @@ MonoBehaviour:
   isAttacking: 0
   isSlowed: 0
   role: 0
+  canDrive: 0
   maxSpeed: 45
   boostSpeed: 60
   boostImpulse: 5000
@@ -1110,6 +1111,8 @@ MonoBehaviour:
   distanceToNext: 0
   lapText: {fileID: 5145359214574306570}
   Rank:
+    m_InternalValue: 0
+  FinalResult:
     m_InternalValue: 0
 --- !u!1 &5553652916880953927
 GameObject:
@@ -1688,7 +1691,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3005130676
+  GlobalObjectIdHash: 3820014133
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1

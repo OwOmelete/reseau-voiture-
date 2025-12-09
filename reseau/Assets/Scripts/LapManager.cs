@@ -1,12 +1,17 @@
 using System;
+using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class LapManager : MonoBehaviour
+public class LapManager : NetworkBehaviour
 {
     public Checkpoint[] checkpoints;
     public int totalLaps;
     
     public static LapManager INSTANCE;
+
+    public List<PlayerProgress> finalResults = new List<PlayerProgress>();
+    
 
     
     private void Awake()
@@ -21,6 +26,23 @@ public class LapManager : MonoBehaviour
         }
     }
 
+    public void PlayerFinished(PlayerProgress player)
+    {
+        if (!IsServer) return;
+
+        if (!finalResults.Contains(player))
+        {
+            finalResults.Add(player);
+            player.FinalPosition.Value = finalResults.Count;
+            
+            if (finalResults.Count == RacePositionManager.Instance.players.Count)
+            {
+                ulong[] playerIds = finalResults.ConvertAll(p => p.OwnerClientId).ToArray();
+                ShowFinalResultsClientRpc(playerIds);
+            }
+        }
+    }
+    
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
@@ -35,9 +57,19 @@ public class LapManager : MonoBehaviour
 
                 if (player.lapCount > totalLaps)
                 {
-                    Debug.Log("gagné");
+                    LapManager.INSTANCE.PlayerFinished(player);
                 }
             }
+        }
+    }
+
+    [ClientRpc]
+    void ShowFinalResultsClientRpc(ulong[] playerIds)
+    {
+        Debug.Log("=== Classement final ===");
+        for (int i = 0; i < playerIds.Length; i++)
+        {
+            Debug.Log($"Place {i + 1} : Player {playerIds[i]}");
         }
     }
 }

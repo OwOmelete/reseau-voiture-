@@ -20,11 +20,6 @@ public class PlayerConnectionManager : NetworkBehaviour
 
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-
-        if (!NetworkObject.IsSpawned)
-        {
-            NetworkObject.Spawn();
-        }
         
         if (NetworkManager.Singleton.IsServer && NetworkManager.Singleton.IsHost)
         {
@@ -37,8 +32,14 @@ public class PlayerConnectionManager : NetworkBehaviour
         PrepareRaceStart();
         Debug.Log("started server");
         
+        if (!NetworkObject.IsSpawned)
+        {
+            NetworkObject.Spawn();
+        }
         ulong hostId = NetworkManager.Singleton.LocalClientId;
         StartCoroutine(WaitForPlayerSpawn(hostId));
+        
+        
     }
     
     private void OnClientConnected(ulong clientId)
@@ -85,12 +86,11 @@ public class PlayerConnectionManager : NetworkBehaviour
     {
         yield return new WaitForSeconds(delay);
         
-        StartCountdownServerRpc();
+        StartCountdownServer();
         
     }
     
-    [ServerRpc(RequireOwnership = false)]
-    public void StartCountdownServerRpc()
+    public void StartCountdownServer()
     {
         if (!IsServer)
         {

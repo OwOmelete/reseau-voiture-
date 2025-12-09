@@ -6,7 +6,7 @@ using System.Linq;
 public class RacePositionManager : NetworkBehaviour
 {
     public static RacePositionManager Instance;
-    private List<PlayerProgress> players = new List<PlayerProgress>();
+    public List<PlayerProgress> players = new List<PlayerProgress>();
 
     void Awake()
     {

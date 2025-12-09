@@ -17,11 +17,9 @@ namespace DefaultNamespace
         
         private void Start()
         {
-            Debug.Log("huhu");
             if (Instance == null)
             {
                 Instance = this;
-                Debug.Log("check");
             }
         }
 
@@ -49,6 +47,7 @@ namespace DefaultNamespace
 
         private void StartRace()
         {
+            KartController.player.startRace();
             Debug.Log($"[Race] ClientId={NetworkManager.Singleton.LocalClientId} : Course lancée !");
         }
     }

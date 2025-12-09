@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using DefaultNamespace;
 using TMPro;
 using UnityEngine;
 using Unity.Netcode;
@@ -35,6 +36,7 @@ public class KartController : NetworkBehaviour
     private float attackTimer;
     public Role role;
     private float driftAmount;
+    public bool canDrive = false;
 
 
     public enum Role
@@ -117,7 +119,7 @@ public class KartController : NetworkBehaviour
     [SerializeField] private GameObject backLeftWheel;
     [SerializeField] private GameObject backRightWheel;
     [SerializeField] private TMP_Text positionText;
-    [SerializeField] private PlayerProgress playerProgress;
+    [SerializeField] public PlayerProgress playerProgress;
 
 
     public static KartController player;
@@ -133,6 +135,9 @@ public class KartController : NetworkBehaviour
         
         CameraManager.INSTANCE.gameObject.transform.SetParent(camPivot);
         steering = groundSteering;
+
+        transform.position = SpawnManager.Instance.spawnPoints[OwnerClientId].position;
+        sphere.transform.position = SpawnManager.Instance.spawnPoints[OwnerClientId].position;
     }
 
     public override void OnNetworkSpawn()
@@ -154,6 +159,11 @@ public class KartController : NetworkBehaviour
             role = Role.seeker;
         }
         else role = Role.hider;
+    }
+
+    public void startRace()
+    {
+        canDrive = true;
     }
 
     public void slow()
@@ -194,6 +204,25 @@ public class KartController : NetworkBehaviour
         if (!IsOwner)
         {
             return;
+        }
+
+        if (!canDrive)
+        {
+            return;
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            Debug.Log("fini");
+            LapManager.INSTANCE.PlayerFinished(playerProgress);
+        }
+
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            Debug.Log("resultat");
+            Debug.Log(playerProgress.FinalPosition.Value);
+            
         }
         
         if (isSlowed)
@@ -333,6 +362,11 @@ public class KartController : NetworkBehaviour
     private void FixedUpdate()
     {
         if (!IsOwner)
+        {
+            return;
+        }
+
+        if (!canDrive)
         {
             return;
         }

@@ -15,6 +15,12 @@ public class PlayerProgress : NetworkBehaviour
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
         );
+    
+    public NetworkVariable<int> FinalPosition = new NetworkVariable<int>(
+        -1,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
 
     public override void OnNetworkSpawn()
     {

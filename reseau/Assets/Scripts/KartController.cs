@@ -30,6 +30,7 @@ public class KartController : NetworkBehaviour
     private Vector3 camVelocity;
     public bool isAttacking;
     public bool isSlowed = false;
+    private bool isBraking;
     private float slowTimer;
     private float attackTimer;
     public Role role;
@@ -62,6 +63,8 @@ public class KartController : NetworkBehaviour
 
     public float slowDuration;
     public float slowMult;
+
+    public float brakeMult;
 
     public float attackDelay;
     public float attackDuration;
@@ -141,7 +144,6 @@ public class KartController : NetworkBehaviour
 
         if (IsClient)
         {
-            Debug.Log("Mon rôle : " + role);
         }
     }
 
@@ -160,8 +162,6 @@ public class KartController : NetworkBehaviour
         {
             return;
         }
-        
-        Debug.Log("victor baz embrasse moi ^^ :3 ");
 
         slowTimer = slowDuration;
         isSlowed = true;
@@ -236,6 +236,16 @@ public class KartController : NetworkBehaviour
             Debug.Log("attack");
         }
 
+        if (Input.GetKeyDown(KeyCode.E) || Input.GetButtonDown("Fire2"))
+        {
+            isBraking = true;
+        }
+
+        if (Input.GetKeyUp(KeyCode.E) || Input.GetButtonUp("Fire2"))
+        {
+            isBraking = false;
+        }
+        
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             isBoosting = true;
@@ -253,15 +263,15 @@ public class KartController : NetworkBehaviour
             if (OnGround)
             {
                 hasJumped = true;
-                float dir = Input.GetAxis("Horizontal");
+                float dir = Input.GetAxisRaw("Horizontal");
                 sphere.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 airSpin = 70f * dir;
                 currentSpinSpeed = Mathf.Abs(dir);
-                if (dir < -0.1f)
+                if (dir < -0.01f)
                 {
                     currentDriftDir = driftDir.left;
                 }
-                else if (dir > 0.1f)
+                else if (dir > 0.01f)
                 {
                     currentDriftDir = driftDir.right;
                 }
@@ -273,10 +283,12 @@ public class KartController : NetworkBehaviour
             canDrift = true;
         }
 
-        if (Input.GetKeyUp(KeyCode.Space) || (Input.GetAxisRaw("TriggerRight") == 0 && jumpPressed))
+        if ((Input.GetKeyUp(KeyCode.Space) || (Input.GetAxisRaw("TriggerRight") == 0) && jumpPressed))
         {
             jumpPressed = false;
-            canDrift = false;
+
+            if (!OnGround) canDrift = false;
+            //canDrift = false;
             if (isDrifting)
             {
                 driftEffect.SetActive(false);
@@ -308,10 +320,14 @@ public class KartController : NetworkBehaviour
         }
         
         currentSpeed = Mathf.SmoothStep(currentSpeed, speed, Time.deltaTime * acceleration);
+
+        if (isBraking)
+        {
+            currentSpeed *= brakeMult;
+        }
         speed = 0f;
         currentRotate = Mathf.Lerp(currentRotate, rotate, Time.deltaTime * 4f);
         rotate = 0f;
-        
     }
 
     private void FixedUpdate()
@@ -359,9 +375,8 @@ public class KartController : NetworkBehaviour
                 isJumping = false;
                 hasJumped = false;
             }
-            if (canDrift && !isDrifting && startDrift &&  (MathF.Abs(dir) > 0.1f || currentDriftDir != driftDir.none))
+            if (canDrift && !isDrifting && startDrift &&  (MathF.Abs(dir) > 0f || currentDriftDir != driftDir.none))
             {
-                
                 startDrift = false;
                 canDrift = false;
                 isDrifting = true;
@@ -369,11 +384,11 @@ public class KartController : NetworkBehaviour
 
                 if (currentDriftDir == driftDir.none)
                 {
-                    if (dir < -0.1f)
+                    if (dir < -0.01f)
                     {
                         currentDriftDir = driftDir.left;
                     }
-                    else if (dir > 0.1f)
+                    else if (dir > 0.01f)
                     {
                         currentDriftDir = driftDir.right;
                     }

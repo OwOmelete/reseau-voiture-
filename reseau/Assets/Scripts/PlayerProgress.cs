@@ -44,7 +44,7 @@ public class PlayerProgress : NetworkBehaviour
     private void Start()
     {
         lapCount = 1;
-        checkpointIndex = 0;
+        checkpointIndex = 1;
         UpdateLapText();
     }
 
@@ -52,13 +52,13 @@ public class PlayerProgress : NetworkBehaviour
     {
         if (!IsServer) return;
         Transform next;
-        if (checkpointIndex == 0)
+        if (checkpointIndex == LapManager.INSTANCE.checkpoints.Length)
         {
             next = LapManager.INSTANCE.transform;
         }
         else
         {
-            next = LapManager.INSTANCE.checkpoints[checkpointIndex - 1].transform;
+            next = LapManager.INSTANCE.checkpoints[checkpointIndex].transform;
         }
         distanceToNext = Vector3.Distance(transform.position, next.position);
     }

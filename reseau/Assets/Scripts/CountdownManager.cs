@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -39,8 +40,15 @@ namespace DefaultNamespace
                     raceStarted = true;
                     countdownText.text = "GO!";
                     StartRace();
+                    StartCoroutine(countdownFinished());
                 }
             }
+        }
+
+        IEnumerator countdownFinished()
+        {
+            yield return new WaitForSeconds(1.5f);
+            countdownText.text = "";
         }
 
         // Appeler depuis le serveur seulement

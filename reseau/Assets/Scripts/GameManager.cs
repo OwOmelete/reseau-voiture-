@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
 {
     public Transform respawnPoint;
     public static GameManager INSTANCE;
+    public GameObject buttons;
 
     private void Awake()
     {

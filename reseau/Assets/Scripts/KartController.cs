@@ -6,6 +6,9 @@ using UnityEngine;
 using Unity.Netcode;
 using DG.Tweening;
 using DG.Tweening.Core;
+using Unity.Netcode.Components;
+using UnityEngine.SceneManagement;
+
 
 public class KartController : NetworkBehaviour
 {
@@ -36,6 +39,7 @@ public class KartController : NetworkBehaviour
     private float attackTimer;
     public Role role;
     private float driftAmount;
+    public bool raceFinished = false;
     public bool canDrive = false;
 
 
@@ -111,6 +115,7 @@ public class KartController : NetworkBehaviour
     public Transform kartNormal;
     public Transform kartModel;
     public Transform camPivot;
+    [SerializeField] private MeshRenderer attackRender;
     [SerializeField] private SphereCollider attackCollider;
     [SerializeField] private GameObject frontLeftWheel;
     [SerializeField] private GameObject frontLeftWheelPivot;
@@ -119,6 +124,7 @@ public class KartController : NetworkBehaviour
     [SerializeField] private GameObject backLeftWheel;
     [SerializeField] private GameObject backRightWheel;
     [SerializeField] private TMP_Text positionText;
+    [SerializeField] public TMP_Text resultText;
     [SerializeField] public PlayerProgress playerProgress;
 
 
@@ -132,12 +138,19 @@ public class KartController : NetworkBehaviour
         }
 
         player = this;
+
+        currentDriftDir = driftDir.none;
         
         CameraManager.INSTANCE.gameObject.transform.SetParent(camPivot);
         steering = groundSteering;
+        
+        NetworkTransform cnt = GetComponent<NetworkTransform>();
+        
+        cnt.Teleport(SpawnManager.Instance.spawnPoints[OwnerClientId].position, SpawnManager.Instance.spawnPoints[OwnerClientId].rotation, transform.localScale);
 
-        transform.position = SpawnManager.Instance.spawnPoints[OwnerClientId].position;
-        sphere.transform.position = SpawnManager.Instance.spawnPoints[OwnerClientId].position;
+        cnt = sphere.GetComponent<NetworkTransform>();
+        
+        cnt.Teleport(SpawnManager.Instance.spawnPoints[OwnerClientId].position, Quaternion.identity, sphere.transform.localScale);
     }
 
     public override void OnNetworkSpawn()
@@ -163,6 +176,11 @@ public class KartController : NetworkBehaviour
 
     public void startRace()
     {
+        NetworkTransform cnt = sphere.GetComponent<NetworkTransform>();
+        
+        GameManager.INSTANCE.buttons.SetActive(false);
+        
+        cnt.Teleport(SpawnManager.Instance.spawnPoints[OwnerClientId].position, Quaternion.identity, sphere.transform.localScale);
         canDrive = true;
     }
 
@@ -195,9 +213,30 @@ public class KartController : NetworkBehaviour
     {
         isAttacking = true;
         attackCollider.enabled = true;
+        attackRender.enabled = true;
         yield return new WaitForSeconds(attackDuration);
         isAttacking = false;
         attackCollider.enabled = false;
+        attackRender.enabled = false;
+    }
+
+    public void updateResultText(ulong[] playerIds)
+    {
+        if (!IsOwner) return;
+        for (int i = 0; i < playerIds.Length; i++)
+        {
+            if (playerIds[i] == OwnerClientId)
+            {
+                resultText.text += $"<b> Place {i + 1} : Player {playerIds[i]} </b> \n";
+            }
+            else
+            {
+                resultText.text += $"Place {i + 1} : Player {playerIds[i]} \n";
+            }
+            
+        }
+
+        raceFinished = true;
     }
     void Update()
     {
@@ -211,19 +250,20 @@ public class KartController : NetworkBehaviour
             return;
         }
 
-
-        if (Input.GetKeyDown(KeyCode.Y))
+        if (Input.GetKeyDown(KeyCode.Space) && IsOwner)
         {
-            Debug.Log("fini");
-            LapManager.INSTANCE.PlayerFinished(playerProgress);
-        }
+            if (IsHost)
+            {
+                NetworkManager.Singleton.Shutdown();
+            }
+            else if (IsClient) 
+            {
+                NetworkManager.Singleton.DisconnectClient(OwnerClientId);
+            }
 
-        if (Input.GetKeyDown(KeyCode.U))
-        {
-            Debug.Log("resultat");
-            Debug.Log(playerProgress.FinalPosition.Value);
-            
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
+        
         
         if (isSlowed)
         {
@@ -265,12 +305,12 @@ public class KartController : NetworkBehaviour
             Debug.Log("attack");
         }
 
-        if (Input.GetKeyDown(KeyCode.E) || Input.GetButtonDown("Fire2"))
+        if (Input.GetKeyDown(KeyCode.S) || Input.GetButtonDown("Fire2"))
         {
             isBraking = true;
         }
 
-        if (Input.GetKeyUp(KeyCode.E) || Input.GetButtonUp("Fire2"))
+        if (Input.GetKeyUp(KeyCode.S) || Input.GetButtonUp("Fire2"))
         {
             isBraking = false;
         }
@@ -296,17 +336,22 @@ public class KartController : NetworkBehaviour
                 sphere.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 airSpin = 70f * dir;
                 currentSpinSpeed = Mathf.Abs(dir);
-                if (dir < -0.01f)
+                if (currentDriftDir == driftDir.none)
                 {
-                    currentDriftDir = driftDir.left;
-                }
-                else if (dir > 0.01f)
-                {
-                    currentDriftDir = driftDir.right;
-                }
-                else
-                {
-                    currentDriftDir = driftDir.none;
+   
+                    if (dir < -0.01f)
+                    {
+                        currentDriftDir = driftDir.left;
+                    }
+                    else if (dir > 0.01f)
+                    {
+                        currentDriftDir = driftDir.right;
+                    }
+                    else
+                    {
+                
+                        currentDriftDir = driftDir.none;
+                    }
                 }
             }
             canDrift = true;
@@ -333,9 +378,10 @@ public class KartController : NetworkBehaviour
                     boostDuration = driftLevel1Duration + boostVisualsDuration;
                     Boost();
                 }
-            }
 
-            currentDriftDir = driftDir.none;
+                currentDriftDir = driftDir.none;
+            }
+            
             isDrifting = false;
             updateDriftVisu(0);
             driftAmount = 0;
@@ -415,9 +461,12 @@ public class KartController : NetworkBehaviour
                 canDrift = false;
                 isDrifting = true;
                 driftEffect.SetActive(true);
+                
+
 
                 if (currentDriftDir == driftDir.none)
                 {
+
                     if (dir < -0.01f)
                     {
                         currentDriftDir = driftDir.left;
@@ -431,7 +480,6 @@ public class KartController : NetworkBehaviour
                         currentDriftDir = driftDir.none;
                     }
                 }
-                //Debug.Log(currentDriftDir);
             }
             else
             {

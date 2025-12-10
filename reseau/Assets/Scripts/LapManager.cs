@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -66,10 +67,6 @@ public class LapManager : NetworkBehaviour
     [ClientRpc]
     void ShowFinalResultsClientRpc(ulong[] playerIds)
     {
-        Debug.Log("=== Classement final ===");
-        for (int i = 0; i < playerIds.Length; i++)
-        {
-            Debug.Log($"Place {i + 1} : Player {playerIds[i]}");
-        }
+        KartController.player.updateResultText(playerIds);
     }
 }

@@ -77,7 +77,7 @@ public class PlayerConnectionManager : NetworkBehaviour
         if (spawnedPlayers == expectedPlayers)
         {
             StopAllCoroutines();
-            StartCoroutine(StartCountdownDelay(5f));
+            StartCoroutine(StartCountdownDelay(10f));
         }
         
     }
@@ -114,7 +114,6 @@ public class PlayerConnectionManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void StartCountdownClientRpc(double startTimeFromServer)
     {
-        Debug.Log("coucou");
         CountdownManager.Instance.startTime = startTimeFromServer;
         CountdownManager.Instance.raceStarted = false;
         Debug.Log($"[ClientRpc] ClientId={NetworkManager.Singleton.LocalClientId} reçoit startTime={startTimeFromServer}");

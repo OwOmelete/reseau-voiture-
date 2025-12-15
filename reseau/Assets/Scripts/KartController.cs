@@ -248,20 +248,12 @@ public class KartController : NetworkBehaviour
         if (!canDrive)
         {
             return;
+            
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && IsOwner)
+        if (raceFinished && Input.GetKeyDown(KeyCode.Space) && IsOwner)
         {
-            if (IsHost)
-            {
-                NetworkManager.Singleton.Shutdown();
-            }
-            else if (IsClient) 
-            {
-                NetworkManager.Singleton.DisconnectClient(OwnerClientId);
-            }
-
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            Application.Quit();
         }
         
         
@@ -313,17 +305,6 @@ public class KartController : NetworkBehaviour
         if (Input.GetKeyUp(KeyCode.S) || Input.GetButtonUp("Fire2"))
         {
             isBraking = false;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            isBoosting = true;
-            Boost();
-        }
-
-        if (Input.GetKeyUp(KeyCode.LeftShift))
-        {
-            isBoosting = false;
         }
         
         if (Input.GetKeyDown(KeyCode.Space) || (Input.GetAxisRaw("TriggerRight") == 1 && !jumpPressed))

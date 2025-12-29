@@ -10,6 +10,7 @@ public class PlayerConnectionManager : NetworkBehaviour
     private int spawnedPlayers = 0;
 
     private bool serverInitialized = false;
+    public bool isSolo;
     
     public void InitServer()
     {
@@ -77,7 +78,9 @@ public class PlayerConnectionManager : NetworkBehaviour
         if (spawnedPlayers == expectedPlayers)
         {
             StopAllCoroutines();
-            StartCoroutine(StartCountdownDelay(10f));
+            if (isSolo) StartCoroutine(StartCountdownDelay(1f));
+            else StartCoroutine(StartCountdownDelay(10f));
+
         }
         
     }

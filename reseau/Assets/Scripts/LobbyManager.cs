@@ -13,6 +13,7 @@ public class LobbyManager : MonoBehaviour
   [SerializeField] TMP_InputField lobbyCodeTextField;
   [SerializeField] TMP_InputField playerNameTextField;
   [SerializeField] Transform      startGameButtonTransform;
+  [SerializeField] private TMP_Text txt;
   float                           heartBeatTimer;
 
 
@@ -235,7 +236,8 @@ public class LobbyManager : MonoBehaviour
       joinedLobby = lobby;
 
 
-      Debug.Log("Joined Lobby");
+      Debug.Log("Lobby joined ");
+      
 
 
       PrintPlayers(lobby);
@@ -297,7 +299,8 @@ public class LobbyManager : MonoBehaviour
 
 
       Debug.Log("Quick Joined Lobby");
-
+      txt.text = "lobby joined\n" +
+                 "Waiting Players ";
 
       PrintPlayers(lobby);
     }

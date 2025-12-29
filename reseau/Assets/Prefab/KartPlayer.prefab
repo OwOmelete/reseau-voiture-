@@ -1078,6 +1078,7 @@ MonoBehaviour:
   isAttacking: 0
   isSlowed: 0
   role: 0
+  raceFinished: 0
   canDrive: 0
   maxSpeed: 45
   boostSpeed: 60
@@ -1093,7 +1094,7 @@ MonoBehaviour:
   gravity: 25
   jumpForce: 2000
   spinSpeed: 50
-  raycastDistance: 0.3
+  raycastDistance: 0.2
   driftAngle: 0.4
   driftBaseSteering: 10
   driftMaxSteering: 15
@@ -1322,7 +1323,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6824044729845349620}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 1e8dd76a8a4cbbe4d801fac89551542c, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1928,7 +1929,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3820014133
+  GlobalObjectIdHash: 3005130676
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1

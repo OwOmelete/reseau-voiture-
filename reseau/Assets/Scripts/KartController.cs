@@ -251,7 +251,7 @@ public class KartController : NetworkBehaviour
             
         }
 
-        if (raceFinished && Input.GetKeyDown(KeyCode.Space) && IsOwner)
+        if (raceFinished && Input.GetKeyDown(KeyCode.Y) && IsOwner)
         {
             Application.Quit();
         }
@@ -375,14 +375,14 @@ public class KartController : NetworkBehaviour
             speed *= boostMult;
         }
         
-        currentSpeed = Mathf.SmoothStep(currentSpeed, speed, Time.deltaTime * acceleration);
+        currentSpeed = Mathf.SmoothStep(currentSpeed, speed, Time.fixedDeltaTime * acceleration);
 
         if (isBraking)
         {
             currentSpeed *= brakeMult;
         }
         speed = 0f;
-        currentRotate = Mathf.Lerp(currentRotate, rotate, Time.deltaTime * 4f);
+        currentRotate = Mathf.Lerp(currentRotate, rotate, Time.fixedDeltaTime * 0.4f);
         rotate = 0f;
     }
 
@@ -404,7 +404,8 @@ public class KartController : NetworkBehaviour
         Physics.Raycast(transform.position + (transform.up*.1f), Vector3.down, out hitOn, 1.1f);
 
         //Normal Rotation
-        OnGround = Physics.Raycast(transform.position + (transform.up * .1f), -kartModel.transform.up, out hitNear, raycastDistance);
+        OnGround = Physics.Raycast(transform.position + transform.forward * 0.2f,-kartNormal.up, out hitNear, raycastDistance);
+        Debug.DrawRay(transform.position + transform.forward * 0.2f, -kartNormal.up, Color.red);
 
         if (boostDuration > 0)
         {
@@ -522,9 +523,16 @@ public class KartController : NetworkBehaviour
         
         sphere.AddForce(Vector3.down * gravity, ForceMode.Acceleration);
 
+        Vector3 groundNormal = hitNear.normal;
+        
         float grav = sphere.linearVelocity.y;
+        
+        if (OnGround)
+        {
+            grav = 0;
+        }
 
-        Vector3 Velocity = new Vector3(sphere.linearVelocity.x, 0f, sphere.linearVelocity.z);
+        Vector3 Velocity = sphere.linearVelocity;
         if (OnGround)
         {
             if (isDrifting && currentDriftDir!=driftDir.none)
@@ -539,20 +547,20 @@ public class KartController : NetworkBehaviour
                     Vector3 angle = Vector3.Lerp(kartModel.transform.forward, -kartModel.transform.right, driftAngle).normalized;
                     Velocity = angle * Velocity.magnitude;
                 }
-                
             }
             else
             {
                 Velocity = kartModel.transform.forward.normalized * Velocity.magnitude;
-                
             }
         }
 
-        sphere.linearVelocity = new Vector3(Velocity.x, grav, Velocity.z);
+        Velocity = Vector3.ProjectOnPlane(Velocity, groundNormal);
+        //Velocity.y += grav;
+        
+        sphere.linearVelocity = Velocity;
 
         transform.eulerAngles = Vector3.Lerp(transform.eulerAngles,
             new Vector3(0, transform.eulerAngles.y + currentRotate, 0), Time.deltaTime * 5f);
-        
         
         kartNormal.up = Vector3.Lerp(kartNormal.up, hitOn.normal, Time.deltaTime * 8.0f);
         
@@ -616,6 +624,7 @@ public class KartController : NetworkBehaviour
 
     void Boost()
     {
+        CameraManager.INSTANCE.boost(boostDuration);
         fire.SetActive(true);
         foreach (var fires in fireList)
         {

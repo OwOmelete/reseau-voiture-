@@ -272,7 +272,7 @@ public class KartController : NetworkBehaviour
         
         positionText.text = playerProgress.Rank.Value.ToString();
         
-        transform.position = sphere.transform.position - new Vector3(0,carOffset,0);
+        transform.position = sphere.transform.position - kartModel.up * carOffset;
         
         if (Input.GetKey(KeyCode.W) || Input.GetButton("Fire1"))
         {
@@ -382,7 +382,7 @@ public class KartController : NetworkBehaviour
             currentSpeed *= brakeMult;
         }
         speed = 0f;
-        currentRotate = Mathf.Lerp(currentRotate, rotate, Time.fixedDeltaTime * 0.4f);
+        currentRotate = Mathf.Lerp(currentRotate, rotate, Time.fixedDeltaTime * 0.8f);
         rotate = 0f;
     }
 
@@ -404,8 +404,8 @@ public class KartController : NetworkBehaviour
         Physics.Raycast(transform.position + (transform.up*.1f), Vector3.down, out hitOn, 1.1f);
 
         //Normal Rotation
-        OnGround = Physics.Raycast(transform.position + transform.forward * 0.2f,-kartNormal.up, out hitNear, raycastDistance);
-        Debug.DrawRay(transform.position + transform.forward * 0.2f, -kartNormal.up, Color.red);
+        OnGround = Physics.Raycast(transform.position,-kartNormal.up, out hitNear, raycastDistance);
+        Debug.DrawRay(transform.position, -kartNormal.up * raycastDistance, Color.red,raycastDistance);
 
         if (boostDuration > 0)
         {

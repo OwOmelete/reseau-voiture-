@@ -26,7 +26,6 @@ namespace DefaultNamespace
 
         private void Update()
         {
-            // Debug Update pour chaque client
             if (startTime >= 0 )
             {
                 double timeLeft = startTime - NetworkManager.Singleton.NetworkTimeSystem.LocalTime;
@@ -50,8 +49,7 @@ namespace DefaultNamespace
             yield return new WaitForSeconds(1.5f);
             countdownText.text = "";
         }
-
-        // Appeler depuis le serveur seulement
+        
 
         private void StartRace()
         {

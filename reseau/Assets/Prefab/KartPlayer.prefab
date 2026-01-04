@@ -1129,7 +1129,7 @@ MonoBehaviour:
   raycastDistance: 0.15
   driftAngle: 0.4
   driftBaseSteering: 10
-  driftMaxSteering: 15
+  driftMaxSteering: 14
   driftMinSteering: 7
   driftLevelUp: 0.5
   driftLevelUp2: 1.2
@@ -1142,6 +1142,7 @@ MonoBehaviour:
   wheelRotationMult: 30
   camLerpPos: 0.05
   camLerpRot: 0.1
+  camRotDrift: 10
   driftEffect: {fileID: 1997472524368997655}
   leftDrift: {fileID: 5808670058441699422}
   rightDrift: {fileID: 7675532328245744651}

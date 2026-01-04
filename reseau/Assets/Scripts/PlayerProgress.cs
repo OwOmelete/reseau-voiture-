@@ -37,7 +37,7 @@ public class PlayerProgress : NetworkBehaviour
 
     public void UpdateLapText()
     {
-        lapText.text = lapCount + "/" + LapManager.INSTANCE.totalLaps;
+        if (IsOwner) lapText.text = lapCount + "/" + LapManager.INSTANCE.totalLaps;
     }
     
     

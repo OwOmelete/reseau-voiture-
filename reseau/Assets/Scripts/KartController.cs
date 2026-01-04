@@ -100,6 +100,7 @@ public class KartController : NetworkBehaviour
     public float wheelRotationMult = 1;
     [SerializeField] private float camLerpPos;
     [SerializeField] private float camLerpRot;
+    [SerializeField] private float camRotDrift;
     [SerializeField] private GameObject driftEffect;
     [SerializeField] private MeshRenderer leftDrift;
     [SerializeField] private MeshRenderer rightDrift;
@@ -202,10 +203,34 @@ public class KartController : NetworkBehaviour
             kartModel.transform.position,
             ref camVelocity,
             camLerpPos);
+
+        float camRotZ = 0;
+        
+        if (isDrifting)
+        {
+            if (currentDriftDir == driftDir.left)
+            {
+                camRotZ = camRotDrift;
+            }
+            else
+            {
+                camRotZ = -camRotDrift;
+            }
+        }
+        
+        float slopeX = kartModel.eulerAngles.x;
+        if (slopeX > 180f)
+            slopeX -= 360f;
+
+        float camTilt = slopeX * 0.5f;
+        
         camPivot.transform.rotation = Quaternion.Lerp(
             camPivot.transform.rotation, 
-            Quaternion.Euler(0, kartModel.eulerAngles.y, 0),
+            Quaternion.Euler(camTilt, kartModel.eulerAngles.y, camRotZ),
             camLerpRot);
+
+        
+        
     }
 
 
@@ -521,7 +546,14 @@ public class KartController : NetworkBehaviour
 
         
         
-        sphere.AddForce(Vector3.down * gravity, ForceMode.Acceleration);
+        if (OnGround)
+        {
+            sphere.AddForce(-hitNear.normal * gravity * 2f, ForceMode.Acceleration);
+        }
+        else
+        {
+            sphere.AddForce(Vector3.down * gravity, ForceMode.Acceleration);
+        }
 
         Vector3 groundNormal = hitNear.normal;
         
@@ -553,6 +585,12 @@ public class KartController : NetworkBehaviour
                 Velocity = kartModel.transform.forward.normalized * Velocity.magnitude;
             }
         }
+        Vector3 smoothedNormal = Vector3.Lerp(
+            kartNormal.up,
+            hitNear.normal,
+            Time.deltaTime * 10f
+        );
+        
 
         Velocity = Vector3.ProjectOnPlane(Velocity, groundNormal);
         //Velocity.y += grav;
